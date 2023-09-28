@@ -1,0 +1,49 @@
+Sub AddingHeadings()
+'
+' A tool to convert lines with specific keywords into headings for bug chasing and investigation
+' The key word used here as an exmaple is "KEYWORD #1" and "KEYWORD #2"
+    Dim doc As Document
+    Dim para As Paragraph
+
+    Set doc = ActiveDocument
+    
+    Dim currLine As String
+    Dim beginController As String
+    Dim dictionary As String
+    
+    Dim numOfLine As Integer
+    
+    ' count the number of non-blank line
+    numOfLine = doc.BuiltInDocumentProperties("NUMBER OF LINES")
+    
+    ' Move to the start of document
+    Selection.HomeKey Unit:=wdStory
+
+    ' Start the loop
+
+    For i = 1 To numOfLine
+        ' move to start of line
+        Selection.HomeKey Unit:=wdLine
+        
+        ' select the entire line and copy into variable currLine
+        Selection.EndKey Unit:=wdLine, Extend:=wdExtend
+        currLine = Selection.Range.Text
+       
+        ' get the beginController
+        beginController = Left(currLine, 17)
+        dictionary = Left(currLine, 12)
+        
+        If (beginController = "KEYWORD #1 :") Then  ' keyword "KEYWORD #1 :"
+            Selection.Range.Style = doc.Styles("Heading 1") 
+        Else
+            If (dictionary = "KEYWORD #2") Then ' another keyword "KEYWORD #2"
+                Selection.Range.Style = doc.Styles("Heading 1")
+            End If
+        End If
+        
+        ' move down one line
+        Selection.MoveDown Unit:=wdLine, Count:=1
+
+    Next i
+
+End Sub
