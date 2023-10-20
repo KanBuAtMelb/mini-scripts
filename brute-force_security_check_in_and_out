@@ -123,41 +123,26 @@ new_map_filename = path_Map + "\mapping_" + new_map_date + ".csv"
 print(new_map_filename)
 
 
-# ### Create new log file
+# Create new log file
 
 log_filename = path_Log + "\logging_"+ new_map_date + ".txt"
 print(log_filename)
 
-
-
-
-
 log_file= open(log_filename, "w")
 
-
-# ### Pre-process B1 data
-
-
-
+# Pre-process B1 data 
 
 # data frame for processing with both B1 and B2 data
 df = pd.DataFrame()
 
-
-
-
-
 # split columns
 df_K[[site_num, brand,site_name]] = df_K["Panel"].str.split(' ',n=2,expand=True)
-df_K[["Area and Action and User Number and User Name","Area Number and Area Name"]] = df_K["Event description"].str.rsplit(', ', n=1, expand = True)
-
-df_K[["Area",status,"by","User number and User Name"]] = df_K["Area and Action and User Number and User Name"].str.split(' ',n=3,expand = True)
+df_K[["Area and Action and User Number and User Name","Area Number and Area Name"]] = \
+    df_K["Event description"].str.rsplit(', ', n=1, expand = True)
+df_K[["Area",status,"by","User number and User Name"]] = \
+    df_K["Area and Action and User Number and User Name"].str.split(' ',n=3,expand = True)
 df_K[[user_num, user_name]] = df_K["User number and User Name"].str.split('(',n=1,expand = True)
 df_K[[area_num,area_name]] = df_K["Area Number and Area Name"].str.split('(',n=1,expand = True)
-
-
-
-
 
 # format Store Number
 df_K[site_num] = pd.to_numeric(df_K[site_num], errors='coerce')
@@ -165,10 +150,6 @@ df_K[site_num] = pd.to_numeric(df_K[site_num], errors='coerce')
 df_K = df_K[df_K[site_num].notna()]
 # convert store number to integer
 df_K[site_num] = df_K.loc[:,site_num].astype('int')
-
-
-
-
 
 # format Area Number
 temp1 = df_K[area_num].str.strip()
@@ -180,24 +161,11 @@ df_K = df_K[df_K[area_num].notna()]
 # convert area number into integer
 df_K[area_num] = df_K.loc[:,area_num].astype('int')
 
-
-
-
-
 # format site number
 df_K[site_num] = df_K.loc[:,site_num].astype('int')
 
-
-
-
-
 # data frame for processing with both B1 and B2 data
 df = pd.DataFrame()
-
-
-
-
-
 df[date_time] = df_K["Local system time"]
 df[site_num] = df_K.loc[:,site_num].astype(str)
 df[status] = df_K[status].str.capitalize()
@@ -206,29 +174,15 @@ df[area_name] = df_K[area_name].str[:-1]
 df[user_num] = df_K[user_num].str.strip()
 df[user_name] = df_K[user_name].str[:-1]
 
-
 # ## Load and pre-process B2 csv file
-
-
-
 
 # get list of file (absolute path) sorted by creation date
 entries_T = sortedFilesByFName(path_T)
-
 file_count = 0
 for ctime, path in entries_T:
   file_count +=1
-
-
-
-
-
 ct, f_T = entries_T[file_count-1]
 df_T = pd.read_csv(f_T)
-
-
-
-
 
 # split columns
 df_T[[site_num, brand,site_name]] = df_T["Panel"].str.split(' ',n=2,expand=True)
@@ -240,18 +194,10 @@ df_T[["User_Num_Lower", user_name]] = df_T["User Number and User Name"].str.spli
 df_T["User_num_Capt"] = df_T["User_Num_Lower"].str.strip()
 df_T[user_num] = df_T["User_num_Capt"].str.capitalize()
 
-
-
-
-
 # format Store Number
 df_T[site_num] = pd.to_numeric(df_T[site_num], errors='coerce')
 df_T = df_T[df_T[site_num].notna()]
 df_T[site_num] = df_T.loc[:,site_num].astype('int')
-
-
-
-
 
 # format Area Number
 temp1 = df_T[area_num].str.strip()
@@ -260,10 +206,6 @@ df_T[area_num] = temp2[1]
 df_T[area_num] = pd.to_numeric(df_T[area_num], errors='coerce')
 df_T = df_T[df_T[area_num].notna()]
 df_T.loc[:,area_num].astype('int')
-
-
-
-
 
 # format columns
 df_T2 = pd.DataFrame()
@@ -275,54 +217,30 @@ df_T2[area_name] = df_T[area_name].str[:-1]
 df_T2[user_num] = df_T[user_num].str.strip()
 df_T2[user_name] = df_T[user_name].str[:-1]
 
-
-
-
-
 # Merge B1 and B2 pre-processed data
 df = df.merge(df_T2, how = 'outer')
 
-
-
-
-
 # convert "Local System Time" column date type from String to Date Time
 df[date_time] = pd.to_datetime(df[date_time], format="%d-%m-%Y %H:%M:%S",errors='coerce')
-
-
-
-
 
 # split datetime into date and time
 df[date] = df[date_time].dt.date
 df[time] = df[date_time].dt.time #?? time precision needs double check
 
-
-
-
-
 # Save the data frame to a csv file with the last B1 daily file date 
 log_filename = path_Log + "\df_"+ new_map_date + ".csv"
 df.to_csv(log_filename)
 
-
-# ## Load "Area Info" 
-
-
-
+# Load "Area Info" 
 
 # "Area Info.xlxs" loading
 df_AI = pd.read_excel(area_info_file, index_col=None)
 df_AI['Store Code'] = df_AI.loc[:, 'Store Code'].astype(str)
 
 
-
-
-
 # Find the responding Cleaner Areas, TORY Areas or Staff Entry Area based on the given store number
 def findAreaInfo(store_num, areas):
-#   areas_str = df_AI.at[df_AI.loc[df_AI["Store Code"]==store_num].index[0],areas] # Unify "Store Code" and "Store Number"!!
-  
+#   areas_str = df_AI.at[df_AI.loc[df_AI["Store Code"]==store_num].index[0],areas] # Unify "Store Code" and "Store Number"!!  
   try:
     areas_str = df_AI.at[df_AI.loc[df_AI["Store Code"]==store_num].index[0],areas]
     areas = set(areas_str.split(', ')) # The seperator is a comma and a space together!
@@ -330,11 +248,7 @@ def findAreaInfo(store_num, areas):
     return set()
   return areas
 
-
 # # Process data into PIPO by timeline
-
-
-
 
 # site_list = df[site_num].unique()
 site_list = df[site_num].unique()
@@ -347,10 +261,6 @@ print(date_list)
 
 log_file.write("%s sites, and %s dates, so %s iterations.\n" % (len(site_list), len(date_list), len(site_list)*len(date_list)))
 
-
-
-
-
 # global variables
 staff_in = 'Staff In'
 staff_out = 'Staff Out'
@@ -360,18 +270,11 @@ min_gap =  timedelta(minutes = 15)
 
 
 # ### Load the previous map
-
-
-
-
 entries_M= sortedFiles(path_Map)
 ct, path = entries_M[len(entries_M)-1]
 print(ct)
 print(path)
 os.path.basename(path).split('_')[1].split('.')[0]
-
-
-
 
 
 # load the previous map
@@ -382,16 +285,11 @@ ct, old_map_path = entries_M[len(entries_M)-1]
 old_map_date = os.path.basename(old_map_path).split('_')[1].split('.')[0]
 
 map_item_qty = 4
-
 key_accessed_areas = 0
 key_cleaner_in = 1
 key_staff_in = 2
 key_staff_out = 3
 key_store_status = 4
-
-
-
-
 
 # validate the old map date is 1 day behind the new map date, otherwise stop the calculation
 y,m,d = new_map_date.split('-')
@@ -405,37 +303,23 @@ if delta.days != 1:
     from sys import exit
     sys.exit("The latest map date does not match the new daily data log date by 1 day!")
 
-
-
-
-
 # create site map dictionary
 dict_map = {}
 # load the csv file into the dictionary
 with open(old_map_path, newline = '') as map_data:
-  reader = csv.reader(map_data, delimiter=':')
-  
+  reader = csv.reader(map_data, delimiter=':')  
   for row in reader:
-#     print(row)
     site_number = row[0]
     dict_map[site_number] = []
     map_items = []
     if len(row)> 1:
       map_items = row[1][:-1].split(',')
-#       print(map_items)
       for i in range(map_item_qty):
-#         print(map_items[i])
         s = map_items[i]
-        c = s[s.find('[')+1:s.find(']')]
-        
+        c = s[s.find('[')+1:s.find(']')]   
         dict_map[site_number].append(c.split('+')[:-1])
-
       store_status = map_items[map_item_qty]
       dict_map[site_number].append(store_status)
-
-
-
-
 
 results_staff = []
 results_cleaner = []
@@ -472,23 +356,11 @@ for i in range(len(site_list)):
   treated_areas_for_staff_out= set(dict_map[this_site_num][key_staff_out])
   store_status = dict_map[this_site_num][key_store_status]
 
-  # print("Loaded accessed areas: ", accessed_areas)
-  # print("Loaded treated cleaner in areas: ", treated_areas_for_cleaner)
-  # print("Loaded treated staff in areas: ", treated_areas_for_staff_in)
-  # print("Loaded treated staff out areas: ", treated_areas_for_staff_out)
-  # print("Loaded store status: ", store_status)
-
-
   # pre-fined robot areas, cleaner areas and staff entry:
   robot_areas = findAreaInfo(this_site_num, robot_areas_header)
   cleaner_areas = findAreaInfo(this_site_num, cleaner_areas_header)
   staff_entry = findAreaInfo(this_site_num, staff_entry_header)
-
-  # print("find robot_areas: ",robot_areas)
-  # print("find cleaner_areas: ",cleaner_areas)
-  # print("find staff_entry: ",staff_entry)
  
-
   # iterate through each row of logs for a site
   for i in range(total_row):
     row = df_site.iloc[i]
@@ -503,9 +375,7 @@ for i in range(len(site_list)):
     last_treated_areas_for_cleaner_len = len(treated_areas_for_cleaner)
     last_treated_areas_for_staff_in_len = len(treated_areas_for_staff_in)
     last_treated_areas_for_staff_out_len = len(treated_areas_for_staff_out)
-#     print('last staff_in, staff_Out, cleaner_in: {}, {}, {}'.format(treated_areas_for_staff_in,treated_areas_for_staff_out,treated_areas_for_cleaner))
     log_file.write('last staff_in, staff_Out, cleaner_in: {0}, {1}, {2} \n'.format(treated_areas_for_staff_in,treated_areas_for_staff_out,treated_areas_for_cleaner))
-
 
     # add/remove area based on security status to the accesed area list
     if row[status] == accessed: # if an area has been accessed, add it to the "accessed areas"
@@ -519,7 +389,6 @@ for i in range(len(site_list)):
       print('*******WARNING: date skipped at Site {}: {} & {} & {} & {}'.format(this_site_num, row[date], row[time], row[area_num], row[status]))
       records_skipped.append('date skipped at Site {}: {} & {} & {} & {}'.format(this_site_num, row[date], row[time], row[area_num], row[status]))
       continue
-#     print("Site {}: {} & {} & {} & {} with accessed area list: {}".format(this_site_num, row[date], row[time], row[area_num], row[status], accessed_areas))
       log_file.write("# {0} Site {1}: {2} & {3} & {4} & {5} with accessed area list: {6} \n".format(i, this_site_num, row[date], row[time], row[area_num], row[status], accessed_areas))
 
     # treated areas for "Staff  In" timestamp capture - remove the cleaner areas, robot areas and staff entry areas
@@ -621,45 +490,15 @@ for i in range(len(site_list)):
   # update the map of this site
   dict_map_new[this_site_num] = [accessed_areas,treated_areas_for_cleaner,treated_areas_for_staff_in,treated_areas_for_staff_out, store_status] 
 
-
-
-
-
 # close log file
 log_file.close()
-
-
-
-
 
 results = results_staff.copy()
 results.extend(results_cleaner)
 df_results = pd.DataFrame(results, columns=['Store Code','Action','Date Time'])  
 
-
-
-
-
-df_results
-
-
-
-
-
 results_file = path_Results + "\\results_"+ new_map_date + ".csv"
 df_results.to_csv(results_file)
-
-
-
-
-
-# for keys, values in dict_map_new.items():
-#   print(keys)
-#   print(values)
-
-
-
-
 
 dict_map_str = {}
 for keys, values in dict_map_new.items():
@@ -670,36 +509,20 @@ for keys, values in dict_map_new.items():
   s = "" # short string for each list item
   for i in range(len(values)):
     s = ""
-#     print("value[i] is: ",values[i])
     n = "" # temporary string with each list item
     if len(values[i]) == 0:
       s = "[]"
-#       print("s is:",s)
     elif isinstance(values[i],str):
       s = values[i]
-#       print("s is:",s)
     else:
       for item in values[i]:
         n = n + item +"+"
         # print("n is: ", n)
       s = "[" + n + "]"
-#       print("s is:",s)
     l = l + s + ","
-#     print("l is: ", l)
-#   print("l is for a site: ", l)
   dict_map_str[keys] = l
 
-      
-
-
-
-
-
 print(new_map_filename)
-
-
-
-
 
 with open(new_map_filename, mode = 'w') as f:
     for key in dict_map_str.keys():
